@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Flow Diagram Playground v2</title>
+    <title>3D Flow Diagram Playground v3</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { margin: 0; overflow: hidden; background-color: #1a1a1a; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -23,7 +23,7 @@
             display: flex;
             flex-direction: column;
             gap: 10px;
-            width: 250px;
+            width: 260px;
             z-index: 10;
             max-height: 90vh;
             overflow-y: auto;
@@ -53,24 +53,32 @@
         }
 
         .tool-btn.full-width { grid-column: span 2; }
+        .tool-btn.third-width { grid-column: span 1; font-size: 0.75rem; }
 
         .tool-btn:hover { background: #444; border-color: #777; }
         .tool-btn.active { background: #3b82f6; border-color: #2563eb; color: white; }
         .tool-btn.danger:hover { background: #ef4444; border-color: #dc2626; }
         
+        /* AI Gradient Button */
         .tool-btn.ai { 
             background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
             border: 1px solid #8b5cf6;
             color: white;
             text-shadow: 0 1px 2px rgba(0,0,0,0.3);
         }
-        .tool-btn.ai:hover {
-            filter: brightness(1.1);
-            box-shadow: 0 0 10px rgba(124, 58, 237, 0.3);
+        .tool-btn.ai:hover { filter: brightness(1.1); box-shadow: 0 0 10px rgba(124, 58, 237, 0.3); }
+
+        /* Animation Controls */
+        .anim-controls {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 4px;
         }
+        .tool-btn.play { background: #059669; border-color: #047857; color: white; }
+        .tool-btn.pause { background: #d97706; border-color: #b45309; color: white; }
+        .tool-btn.stop { background: #dc2626; border-color: #b91c1c; color: white; }
 
         .divider { height: 1px; background: #444; margin: 4px 0; }
-
         .label-sm { font-size: 0.7rem; text-transform: uppercase; color: #888; letter-spacing: 0.05em; margin-bottom: 2px; }
 
         /* Color Picker */
@@ -95,6 +103,7 @@
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
         input[type="color"]::-webkit-color-swatch { border: none; border-radius: 4px; }
 
+        /* Status Bar & Subtitles */
         #status-bar {
             position: absolute;
             bottom: 20px;
@@ -108,6 +117,25 @@
             opacity: 0;
             transition: opacity 0.3s;
             z-index: 20;
+        }
+
+        #subtitle-overlay {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(4px);
+            padding: 16px 24px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            color: #fff;
+            text-align: center;
+            max-width: 80%;
+            border: 1px solid rgba(255,255,255,0.2);
+            display: none;
+            z-index: 15;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
 
         /* Modal Styles */
@@ -182,18 +210,34 @@
 <body>
 
     <div id="ui-panel">
-        <h1 class="text-lg font-bold text-center text-blue-400">FlowBuilder 2.0</h1>
+        <h1 class="text-lg font-bold text-center text-blue-400">FlowBuilder 3.0</h1>
         
         <!-- AI Section -->
-        <div class="label-sm text-purple-400 mt-1">AI Copilot</div>
+        <div class="label-sm text-purple-400 mt-1">AI Director</div>
         <div class="tool-section">
             <button class="tool-btn ai full-width" id="ai-generate">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
-                Generate Flow
+                Generate + Script
             </button>
             <button class="tool-btn ai full-width" id="ai-explain">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
                 Explain
+            </button>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Animation Controls -->
+        <div class="label-sm text-green-400">Animation</div>
+        <div class="anim-controls">
+            <button class="tool-btn play" id="anim-play" title="Play">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+            </button>
+            <button class="tool-btn pause" id="anim-pause" title="Pause">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+            </button>
+            <button class="tool-btn stop" id="anim-stop" title="Stop">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"></rect></svg>
             </button>
         </div>
 
@@ -232,18 +276,15 @@
                 Delete Selected
             </button>
         </div>
-        
-        <div class="mt-2 text-[10px] text-gray-500 leading-tight text-center">
-            'R' to Rotate/Move.
-        </div>
     </div>
 
     <div id="status-bar">Ready</div>
+    <div id="subtitle-overlay"></div>
 
     <!-- Prompt Modal -->
     <div id="prompt-modal" class="modal-overlay">
         <div class="modal-content">
-            <h2 class="text-xl font-bold mb-2 text-purple-400">Generate Flow ✨</h2>
+            <h2 class="text-xl font-bold mb-2 text-purple-400">Generate Flow & Animation ✨</h2>
             <p class="text-sm text-gray-400">Describe the process (e.g., "E-commerce checkout flow").</p>
             <input type="text" id="ai-prompt-input" class="modal-input" placeholder="Enter description...">
             <div class="modal-footer">
@@ -326,6 +367,21 @@
         let selectedObject = null;
         let isConnectMode = false;
         let connectSource = null;
+        
+        // Animation State
+        let animState = {
+            isPlaying: false,
+            isPaused: false,
+            currentIndex: 0,
+            startTime: 0,
+            sequence: [], // [{ targetId: 'uuid', duration: 2000, hold: 1000, text: "Msg" }]
+            cameraStartPos: new THREE.Vector3(),
+            cameraStartTarget: new THREE.Vector3(),
+            targetPos: new THREE.Vector3(),
+            targetLookAt: new THREE.Vector3(),
+            lastStepTime: 0,
+            phase: 'IDLE' // IDLE, MOVING, HOLDING
+        };
 
         // --- Controls ---
         const orbit = new OrbitControls(camera, renderer.domElement);
@@ -339,8 +395,9 @@
         scene.add(transformControl);
 
         // --- Materials ---
-        const arrowMaterial = new THREE.MeshStandardMaterial({ color: 0xaaaaaa });
-        const highlightEmissive = 0x666666;
+        // Enhanced arrow material for directionality
+        const arrowMaterial = new THREE.MeshStandardMaterial({ color: 0xdddddd, roughness: 0.4 });
+        const arrowHeadMaterial = new THREE.MeshStandardMaterial({ color: 0xffaa00, emissive: 0xffaa00, emissiveIntensity: 0.2 }); // Gold/Orange for distinct heads
 
         // --- Object Creation ---
 
@@ -349,7 +406,6 @@
             const z = position ? position.z : (Math.random() - 0.5) * 4;
             const y = position ? position.y : 2;
             
-            // Create specific material for this object so we can change its color individually
             const material = new THREE.MeshStandardMaterial({ 
                 color: colorHex, 
                 roughness: 0.3, 
@@ -361,10 +417,6 @@
             mesh.castShadow = true;
             mesh.receiveShadow = true;
             
-            // Rotate cylinder to stand up if needed, but CylinderGeometry defaults to upright Y-axis.
-            // Diamond (Octahedron) needs no rotation usually.
-            // Capsule defaults upright.
-            
             mesh.userData = { 
                 type: type, 
                 id: Math.random().toString(36).substr(2, 9), 
@@ -374,7 +426,6 @@
             
             scene.add(mesh);
             objects.push(mesh);
-            
             return mesh;
         }
 
@@ -409,12 +460,10 @@
             const texture = createTextTexture(text);
             const material = new THREE.SpriteMaterial({ map: texture });
             const sprite = new THREE.Sprite(material);
-            
             sprite.scale.set(4, 1, 1);
             sprite.userData = { type: 'label' };
 
             if (parentMesh) {
-                // Calculate height offset based on geometry
                 let yOffset = 2;
                 if (parentMesh.geometry.type === 'CylinderGeometry') yOffset = 2.5;
                 if (parentMesh.geometry.type === 'CapsuleGeometry') yOffset = 2.5;
@@ -441,17 +490,14 @@
             selectObject(mesh);
         });
         document.getElementById('add-cylinder').addEventListener('click', () => {
-            // Database shape
             const mesh = addMesh(new THREE.CylinderGeometry(1, 1, 2.5, 32), 'cylinder', null, document.getElementById('obj-color').value);
             selectObject(mesh);
         });
         document.getElementById('add-diamond').addEventListener('click', () => {
-            // Decision shape (Octahedron looks like a 3D diamond)
             const mesh = addMesh(new THREE.OctahedronGeometry(1.5, 0), 'diamond', null, document.getElementById('obj-color').value);
             selectObject(mesh);
         });
         document.getElementById('add-capsule').addEventListener('click', () => {
-            // Start/End shape
             const mesh = addMesh(new THREE.CapsuleGeometry(0.8, 1, 4, 16), 'capsule', null, document.getElementById('obj-color').value);
             selectObject(mesh);
         });
@@ -461,29 +507,21 @@
             addLabel(text);
         });
 
-        // --- Color Picker Logic ---
-        const colorPicker = document.getElementById('obj-color');
-        colorPicker.addEventListener('input', (e) => {
-            const hex = e.target.value;
-            if (selectedObject && selectedObject.userData.type !== 'label') {
-                selectedObject.material.color.set(hex);
-                selectedObject.userData.baseColor = hex; // Update stored base color
-            }
-        });
-
         // --- Connections ---
 
         function createArrow(source, target) {
             const arrowGroup = new THREE.Group();
             
-            const shaftGeo = new THREE.CylinderGeometry(0.05, 0.05, 1, 8);
+            // 1. Shaft (Thinner)
+            const shaftGeo = new THREE.CylinderGeometry(0.08, 0.08, 1, 8);
             shaftGeo.rotateX(Math.PI / 2);
-            shaftGeo.translate(0, 0, 0.5);
+            shaftGeo.translate(0, 0, 0.5); // Pivot at start
             const shaft = new THREE.Mesh(shaftGeo, arrowMaterial);
             
-            const headGeo = new THREE.ConeGeometry(0.2, 0.4, 12);
+            // 2. Head (Larger for clear direction)
+            const headGeo = new THREE.ConeGeometry(0.35, 0.8, 12); // Bigger radius, longer
             headGeo.rotateX(Math.PI / 2);
-            const head = new THREE.Mesh(headGeo, arrowMaterial);
+            const head = new THREE.Mesh(headGeo, arrowHeadMaterial);
             
             arrowGroup.add(shaft);
             arrowGroup.add(head);
@@ -506,38 +544,37 @@
                 const distance = start.distanceTo(end);
                 arrow.group.position.copy(start);
                 arrow.group.lookAt(end);
-                const headLength = 0.4;
+                
+                const headLength = 0.8;
+                // Stop shaft before it hits head pivot
                 const shaftLength = Math.max(0, distance - headLength);
+                
                 arrow.shaft.scale.set(1, 1, shaftLength);
-                arrow.head.position.set(0, 0, distance);
+                arrow.head.position.set(0, 0, distance - (headLength * 0.5)); // Adjust head pos
             });
         }
 
-        // --- Interaction Logic ---
+        // --- Interaction & Selection ---
+        const colorPicker = document.getElementById('obj-color');
+        colorPicker.addEventListener('input', (e) => {
+            if (selectedObject && selectedObject.userData.type !== 'label') {
+                selectedObject.material.color.set(e.target.value);
+                selectedObject.userData.baseColor = e.target.value;
+            }
+        });
 
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
 
         function selectObject(obj) {
-            // Deselect previous
             if (selectedObject && selectedObject.userData.type !== 'label') {
-                if (selectedObject !== connectSource) {
-                    selectedObject.material.emissive.setHex(0x000000); // Turn off glow
-                }
+                if (selectedObject !== connectSource) selectedObject.material.emissive.setHex(0x000000);
             }
-
             selectedObject = obj;
-
             if (selectedObject) {
                 transformControl.attach(selectedObject);
-                
-                // Handle color picker update
                 if (selectedObject.userData.type !== 'label') {
-                     // Highlight current selection
-                    if (selectedObject !== connectSource) {
-                        selectedObject.material.emissive.setHex(0x333333); // Subtle glow
-                    }
-                    // Sync color picker
+                    if (selectedObject !== connectSource) selectedObject.material.emissive.setHex(0x333333);
                     colorPicker.value = '#' + selectedObject.material.color.getHexString();
                 }
             } else {
@@ -547,30 +584,22 @@
 
         window.addEventListener('pointerdown', (event) => {
             if (event.target.tagName !== 'CANVAS') return;
-
             const rect = renderer.domElement.getBoundingClientRect();
             mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
             mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
-
             raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObjects(objects);
-
             if (intersects.length > 0) {
-                const clickedObj = intersects[0].object;
-                if (isConnectMode) {
-                    handleConnectionClick(clickedObj);
-                } else {
-                    selectObject(clickedObj);
-                }
+                if (isConnectMode) handleConnectionClick(intersects[0].object);
+                else selectObject(intersects[0].object);
             } else {
                 if (!isConnectMode) selectObject(null);
             }
         });
 
-        // Connect Mode
+        // --- Connection Logic ---
         const connectBtn = document.getElementById('mode-connect');
         const statusBar = document.getElementById('status-bar');
-
         connectBtn.addEventListener('click', () => {
             isConnectMode = !isConnectMode;
             if (isConnectMode) {
@@ -584,63 +613,136 @@
         });
 
         function handleConnectionClick(obj) {
-            if(obj.userData.type === 'label') return; // No connecting labels
-
+            if(obj.userData.type === 'label') return;
             if (!connectSource) {
                 connectSource = obj;
-                obj.material.emissive.setHex(0x00ff00); // Strong green glow
+                obj.material.emissive.setHex(0x00ff00);
                 statusBar.innerText = "Select Target Node";
             } else {
                 if (connectSource !== obj) {
                     createArrow(connectSource, obj);
                     resetConnectMode();
-                } else {
-                    resetConnectMode();
-                }
+                } else resetConnectMode();
             }
         }
 
         function resetConnectMode() {
             isConnectMode = false;
-            if (connectSource && connectSource.userData.type !== 'label') {
-                connectSource.material.emissive.setHex(0x000000); // Reset glow
-            }
+            if (connectSource && connectSource.userData.type !== 'label') connectSource.material.emissive.setHex(0x000000);
             connectSource = null;
             connectBtn.classList.remove('active');
             statusBar.style.opacity = '0';
-            if(selectedObject) {
-                transformControl.attach(selectedObject);
-                if (selectedObject.userData.type !== 'label') selectedObject.material.emissive.setHex(0x333333);
+            if(selectedObject) transformControl.attach(selectedObject);
+        }
+
+        // --- Animation Logic ---
+        const playBtn = document.getElementById('anim-play');
+        const pauseBtn = document.getElementById('anim-pause');
+        const stopBtn = document.getElementById('anim-stop');
+        const subtitleOverlay = document.getElementById('subtitle-overlay');
+
+        playBtn.addEventListener('click', startAnimation);
+        pauseBtn.addEventListener('click', () => { animState.isPaused = !animState.isPaused; });
+        stopBtn.addEventListener('click', stopAnimation);
+
+        function startAnimation() {
+            if (animState.sequence.length === 0) {
+                // Generate default sequence if none exists
+                animState.sequence = objects
+                    .filter(o => o.userData.type !== 'label')
+                    .map(o => ({ targetId: o.userData.id, duration: 1500, hold: 1000, text: o.userData.label || "Viewing Node" }));
+            }
+            
+            if (animState.sequence.length === 0) return;
+
+            if (!animState.isPlaying) {
+                animState.isPlaying = true;
+                animState.isPaused = false;
+                animState.currentIndex = 0;
+                orbit.enabled = false; // Disable user control
+                transformControl.detach();
+                subtitleOverlay.style.display = 'block';
+                prepareStep(0);
+            } else if (animState.isPaused) {
+                animState.isPaused = false;
             }
         }
 
-        // Delete
-        document.getElementById('delete-obj').addEventListener('click', deleteSelected);
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'Delete' || e.key === 'Backspace') deleteSelected();
-            if (e.key.toLowerCase() === 'r' && selectedObject) {
-                transformControl.setMode(transformControl.mode === 'translate' ? 'rotate' : 'translate');
-            }
-        });
+        function stopAnimation() {
+            animState.isPlaying = false;
+            animState.isPaused = false;
+            orbit.enabled = true;
+            subtitleOverlay.style.display = 'none';
+            statusBar.innerText = "Ready";
+            statusBar.style.opacity = '0';
+        }
 
-        function deleteSelected() {
-            if (!selectedObject) return;
-            scene.remove(selectedObject);
-            const index = objects.indexOf(selectedObject);
-            if (index > -1) objects.splice(index, 1);
+        function prepareStep(index) {
+            if (index >= animState.sequence.length) {
+                stopAnimation();
+                return;
+            }
+
+            const step = animState.sequence[index];
+            const targetObj = objects.find(o => o.userData.id === step.targetId);
+
+            if (!targetObj) {
+                console.warn("Animation target not found, skipping");
+                prepareStep(index + 1);
+                return;
+            }
+
+            // Setup interpolation vars
+            animState.cameraStartPos.copy(camera.position);
+            animState.cameraStartTarget.copy(orbit.target);
             
-            for (let i = arrows.length - 1; i >= 0; i--) {
-                if (arrows[i].source === selectedObject || arrows[i].target === selectedObject) {
-                    scene.remove(arrows[i].group);
-                    arrows.splice(i, 1);
+            // Calculate ideal camera position (offset from target)
+            // Try to stay on the same 'side' as current camera to avoid wild swings, but zoom in
+            const offset = new THREE.Vector3(5, 5, 5); 
+            animState.targetPos.copy(targetObj.position).add(offset);
+            animState.targetLookAt.copy(targetObj.position);
+            
+            animState.phase = 'MOVING';
+            animState.lastStepTime = Date.now();
+            
+            // UI Updates
+            subtitleOverlay.innerText = step.text;
+            statusBar.style.opacity = '1';
+            statusBar.innerText = `Step ${index + 1}/${animState.sequence.length}`;
+            
+            // Highlight object
+            selectObject(targetObj);
+        }
+
+        function updateAnimation() {
+            if (!animState.isPlaying || animState.isPaused) return;
+
+            const now = Date.now();
+            const step = animState.sequence[animState.currentIndex];
+            const elapsed = now - animState.lastStepTime;
+
+            if (animState.phase === 'MOVING') {
+                const progress = Math.min(elapsed / step.duration, 1);
+                
+                // Smooth ease-out
+                const ease = 1 - Math.pow(1 - progress, 3);
+
+                camera.position.lerpVectors(animState.cameraStartPos, animState.targetPos, ease);
+                orbit.target.lerpVectors(animState.cameraStartTarget, animState.targetLookAt, ease);
+
+                if (progress >= 1) {
+                    animState.phase = 'HOLDING';
+                    animState.lastStepTime = now; // Reset timer for hold phase
+                }
+            } else if (animState.phase === 'HOLDING') {
+                if (elapsed >= step.hold) {
+                    animState.currentIndex++;
+                    prepareStep(animState.currentIndex);
                 }
             }
-            transformControl.detach();
-            selectedObject = null;
         }
 
         // --- AI Features ---
-
         const promptModal = document.getElementById('prompt-modal');
         const promptInput = document.getElementById('ai-prompt-input');
         const confirmPromptBtn = document.getElementById('confirm-prompt');
@@ -658,27 +760,25 @@
             if (!userInput) return;
             promptModal.style.display = 'none';
             statusBar.style.opacity = '1';
-            statusBar.innerHTML = `<span class="loader"></span> Designing Flow...`;
+            statusBar.innerHTML = `<span class="loader"></span> Director is working...`;
 
             const systemPrompt = `
-                You are a 3D Flow Diagram Architect. Return strictly valid JSON.
+                You are a 3D Flow Diagram Director. 
+                Create a JSON schema for a 3D flow diagram AND a cinematic camera script.
                 
-                Shapes/Types:
-                - "cube" (Standard Process/Step)
-                - "sphere" (State/Entity)
-                - "cylinder" (Database/Storage)
-                - "diamond" (Decision/Gateway)
-                - "capsule" (Start/End/Terminator)
-
-                Colors (Hex):
-                - Use Semantic Colors (e.g., #ef4444 for Errors, #22c55e for Success, #3b82f6 for default, #eab308 for warnings).
+                Shapes: "cube", "sphere", "cylinder" (DB), "diamond" (Decision), "capsule" (Start/End).
+                Colors: Semantic Hex codes.
                 
-                Schema:
+                Structure:
                 {
-                    "nodes": [ { "label": "Start", "type": "capsule", "color": "#22c55e" } ],
-                    "edges": [ { "from": 0, "to": 1 } ]
+                    "nodes": [ { "id": "n1", "label": "Start", "type": "capsule", "color": "#22c55e" } ],
+                    "edges": [ { "from": 0, "to": 1 } ],
+                    "animation": [
+                        { "targetIndex": 0, "duration": 2000, "hold": 1500, "text": "We begin the process here..." },
+                        { "targetIndex": 1, "duration": 2000, "hold": 2000, "text": "Next, data is validated." }
+                    ]
                 }
-                Limit to 12 nodes.
+                Ensure animation covers the logical flow path.
             `;
 
             const resultStr = await callGemini(userInput, systemPrompt);
@@ -688,11 +788,11 @@
                     const cleanJson = resultStr.replace(/```json/g, '').replace(/```/g, '').trim();
                     const data = JSON.parse(cleanJson);
                     buildFlowFromAI(data);
-                    statusBar.innerText = "Flow Generated!";
+                    statusBar.innerText = "Scene Generated. Press Play!";
                     setTimeout(() => statusBar.style.opacity = '0', 3000);
                 } catch (e) {
                     console.error(e);
-                    alert("AI Error. See console.");
+                    alert("AI Parsing Error.");
                     statusBar.style.opacity = '0';
                 }
             } else {
@@ -701,18 +801,20 @@
         });
 
         function buildFlowFromAI(data) {
-            while(objects.length > 0) { selectedObject = objects[0]; deleteSelected(); }
+            // Clear scene
+            while(objects.length > 0) { selectedObject = objects[0]; deleteSelected(true); }
+            arrows.forEach(a => scene.remove(a.group));
+            arrows.length = 0;
 
             const createdMeshes = [];
-            const spacingX = 6;
-            const spacingZ = 5;
+            const spacingX = 7;
+            const spacingZ = 6;
             const columns = 3; 
 
+            // Build Nodes
             data.nodes.forEach((node, index) => {
                 const col = index % columns;
                 const row = Math.floor(index / columns);
-                
-                // Staggered grid
                 const x = (col * spacingX) - ((columns * spacingX) / 2) + (row % 2 === 0 ? 0 : 3);
                 const z = (row * spacingZ) - 5;
                 
@@ -726,61 +828,60 @@
                 }
 
                 const mesh = addMesh(geo, node.type, { x, y: 2, z }, node.color || '#3b82f6');
+                mesh.userData.id = node.id || mesh.userData.id; // Prefer AI ID if given
                 addLabel(node.label, mesh);
                 createdMeshes.push(mesh);
             });
 
+            // Build Edges
             data.edges.forEach(edge => {
                 if (createdMeshes[edge.from] && createdMeshes[edge.to]) {
                     createArrow(createdMeshes[edge.from], createdMeshes[edge.to]);
                 }
             });
+
+            // Build Animation Sequence
+            if (data.animation) {
+                animState.sequence = data.animation.map(step => ({
+                    targetId: createdMeshes[step.targetIndex] ? createdMeshes[step.targetIndex].userData.id : null,
+                    duration: step.duration || 2000,
+                    hold: step.hold || 1000,
+                    text: step.text || ""
+                })).filter(s => s.targetId);
+            }
         }
 
-        // Explain Logic
-        const resultModal = document.getElementById('result-modal');
-        const explanationText = document.getElementById('ai-explanation-text');
-        const closeResultBtn = document.getElementById('close-result');
-
-        document.getElementById('ai-explain').addEventListener('click', async () => {
-            resultModal.style.display = 'flex';
-            explanationText.innerHTML = '<span class="loader"></span> Analyzing Architecture...';
-
-            const sceneData = {
-                nodes: objects.filter(o => o.userData.type !== 'label').map(o => ({
-                    label: o.userData.label || "Unnamed",
-                    type: o.userData.type,
-                    color: o.userData.baseColor
-                })),
-                connections: arrows.map(a => ({
-                    from: a.source.userData.label,
-                    to: a.target.userData.label
-                }))
-            };
-
-            if (sceneData.nodes.length === 0) {
-                explanationText.innerText = "Canvas is empty.";
-                return;
+        // Delete Logic
+        document.getElementById('delete-obj').addEventListener('click', () => deleteSelected());
+        window.addEventListener('keydown', (e) => {
+            if (e.key === 'Delete' || e.key === 'Backspace') deleteSelected();
+            if (e.key.toLowerCase() === 'r' && selectedObject) {
+                transformControl.setMode(transformControl.mode === 'translate' ? 'rotate' : 'translate');
             }
-
-            const prompt = `
-                Analyze this 3D architecture diagram.
-                Nodes (includes shape & color): ${JSON.stringify(sceneData.nodes)}
-                Connections: ${JSON.stringify(sceneData.connections)}
-                
-                Interpret the colors (e.g., Red often means error/stop, Green start/success) and shapes (Cylinders=Databases, Diamonds=Decisions).
-                Explain the flow's logic.
-            `;
-
-            const explanation = await callGemini(prompt, "You are a Senior System Architect.");
-            explanationText.innerText = explanation;
         });
 
-        closeResultBtn.addEventListener('click', () => { resultModal.style.display = 'none'; });
+        function deleteSelected(force = false) {
+            if (!selectedObject && !force) return;
+            const obj = selectedObject;
+            scene.remove(obj);
+            
+            const index = objects.indexOf(obj);
+            if (index > -1) objects.splice(index, 1);
+            
+            for (let i = arrows.length - 1; i >= 0; i--) {
+                if (arrows[i].source === obj || arrows[i].target === obj) {
+                    scene.remove(arrows[i].group);
+                    arrows.splice(i, 1);
+                }
+            }
+            transformControl.detach();
+            selectedObject = null;
+        }
 
-        // Loop
+        // --- Loop ---
         function animate() {
             requestAnimationFrame(animate);
+            updateAnimation();
             orbit.update();
             updateArrows();
             renderer.render(scene, camera);

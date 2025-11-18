@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Flow Diagram Playground</title>
+    <title>3D Flow Diagram Playground v2</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { margin: 0; overflow: hidden; background-color: #1a1a1a; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -22,28 +22,37 @@
             box-shadow: 0 10px 25px rgba(0,0,0,0.5);
             display: flex;
             flex-direction: column;
-            gap: 12px;
-            width: 240px;
+            gap: 10px;
+            width: 250px;
             z-index: 10;
             max-height: 90vh;
             overflow-y: auto;
+        }
+
+        .tool-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
         }
 
         .tool-btn {
             background: #333;
             border: 1px solid #555;
             color: #ddd;
-            padding: 10px;
+            padding: 8px;
             border-radius: 6px;
             cursor: pointer;
             transition: all 0.2s;
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 8px;
-            font-size: 0.9rem;
+            gap: 6px;
+            font-size: 0.8rem;
             font-weight: 500;
+            width: 100%;
         }
+
+        .tool-btn.full-width { grid-column: span 2; }
 
         .tool-btn:hover { background: #444; border-color: #777; }
         .tool-btn.active { background: #3b82f6; border-color: #2563eb; color: white; }
@@ -62,6 +71,30 @@
 
         .divider { height: 1px; background: #444; margin: 4px 0; }
 
+        .label-sm { font-size: 0.7rem; text-transform: uppercase; color: #888; letter-spacing: 0.05em; margin-bottom: 2px; }
+
+        /* Color Picker */
+        .color-picker-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #222;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #444;
+        }
+        input[type="color"] {
+            -webkit-appearance: none;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            cursor: pointer;
+            background: none;
+        }
+        input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
+        input[type="color"]::-webkit-color-swatch { border: none; border-radius: 4px; }
+
         #status-bar {
             position: absolute;
             bottom: 20px;
@@ -74,6 +107,7 @@
             pointer-events: none;
             opacity: 0;
             transition: opacity 0.3s;
+            z-index: 20;
         }
 
         /* Modal Styles */
@@ -136,7 +170,6 @@
         }
     </style>
     
-    <!-- Import Map for Three.js -->
     <script type="importmap">
         {
             "imports": {
@@ -148,68 +181,71 @@
 </head>
 <body>
 
-    <!-- UI Panel -->
     <div id="ui-panel">
-        <h1 class="text-lg font-bold text-center mb-2 text-blue-400">FlowBuilder 3D</h1>
+        <h1 class="text-lg font-bold text-center text-blue-400">FlowBuilder 2.0</h1>
         
         <!-- AI Section -->
-        <div class="text-xs text-purple-400 font-mono mb-2 uppercase tracking-wider flex items-center gap-2">
-            Gemini AI <span class="text-[10px] bg-purple-900 px-1 rounded">NEW</span>
+        <div class="label-sm text-purple-400 mt-1">AI Copilot</div>
+        <div class="tool-section">
+            <button class="tool-btn ai full-width" id="ai-generate">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+                Generate Flow
+            </button>
+            <button class="tool-btn ai full-width" id="ai-explain">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
+                Explain
+            </button>
         </div>
-        <button class="tool-btn ai" id="ai-generate">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
-            Generate Flow ✨
-        </button>
-        <button class="tool-btn ai" id="ai-explain">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-            Explain Diagram ✨
-        </button>
 
         <div class="divider"></div>
 
-        <div class="text-xs text-gray-400 font-mono mb-2 uppercase tracking-wider">Create</div>
-        <button class="tool-btn" id="add-cube">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect></svg>
-            Add Cube
-        </button>
-        <button class="tool-btn" id="add-sphere">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle></svg>
-            Add Sphere
-        </button>
-        <button class="tool-btn" id="add-text">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7V4h16v3M9 20h6M12 4v16"/></svg>
-            Add Label
-        </button>
-        <button class="tool-btn" id="add-custom">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
-            Add Custom
-        </button>
+        <!-- Properties -->
+        <div class="label-sm">Properties</div>
+        <div class="color-picker-wrapper">
+            <input type="color" id="obj-color" value="#3b82f6">
+            <span class="text-xs text-gray-400">Object Color</span>
+        </div>
 
         <div class="divider"></div>
 
-        <div class="text-xs text-gray-400 font-mono mb-2 uppercase tracking-wider">Tools</div>
-        <button class="tool-btn" id="mode-connect">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
-            Link Nodes
-        </button>
-        <button class="tool-btn danger" id="delete-obj">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-            Delete Selected
-        </button>
+        <!-- Shapes -->
+        <div class="label-sm">Shapes</div>
+        <div class="tool-section">
+            <button class="tool-btn" id="add-cube">Cube</button>
+            <button class="tool-btn" id="add-sphere">Sphere</button>
+            <button class="tool-btn" id="add-cylinder">DB (Cyl)</button>
+            <button class="tool-btn" id="add-diamond">Decision</button>
+            <button class="tool-btn" id="add-capsule">Start/End</button>
+            <button class="tool-btn" id="add-text">Label</button>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Tools -->
+        <div class="label-sm">Tools</div>
+        <div class="tool-section">
+            <button class="tool-btn full-width" id="mode-connect">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                Link Nodes
+            </button>
+            <button class="tool-btn danger full-width" id="delete-obj">
+                Delete Selected
+            </button>
+        </div>
         
         <div class="mt-2 text-[10px] text-gray-500 leading-tight text-center">
-            Select object to move.<br>Press 'R' to toggle Rotate/Translate.
+            'R' to Rotate/Move.
         </div>
     </div>
 
-    <div id="status-bar">Select Source Object...</div>
+    <div id="status-bar">Ready</div>
 
     <!-- Prompt Modal -->
     <div id="prompt-modal" class="modal-overlay">
         <div class="modal-content">
             <h2 class="text-xl font-bold mb-2 text-purple-400">Generate Flow ✨</h2>
-            <p class="text-sm text-gray-400">Describe the process you want to visualize.</p>
-            <input type="text" id="ai-prompt-input" class="modal-input" placeholder="e.g. 'A software login flow' or 'Water cycle'">
+            <p class="text-sm text-gray-400">Describe the process (e.g., "E-commerce checkout flow").</p>
+            <input type="text" id="ai-prompt-input" class="modal-input" placeholder="Enter description...">
             <div class="modal-footer">
                 <button class="tool-btn" id="close-prompt">Cancel</button>
                 <button class="tool-btn ai" id="confirm-prompt">Generate</button>
@@ -235,7 +271,7 @@
         import { TransformControls } from 'three/addons/controls/TransformControls.js';
 
         // --- Gemini API Setup ---
-        const apiKey = ""; // Injected by environment
+        const apiKey = ""; 
         const MODEL_NAME = "gemini-2.5-flash-preview-09-2025";
         const API_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL_NAME}:generateContent?key=${apiKey}`;
 
@@ -250,15 +286,11 @@
                     })
                 });
 
-                if (!response.ok) {
-                    throw new Error(`API Error: ${response.statusText}`);
-                }
-
+                if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
                 const data = await response.json();
                 return data.candidates?.[0]?.content?.parts?.[0]?.text || "No response.";
             } catch (error) {
                 console.error("Gemini API Error:", error);
-                alert("Failed to call Gemini API. See console for details.");
                 return null;
             }
         }
@@ -307,22 +339,38 @@
         scene.add(transformControl);
 
         // --- Materials ---
-        const defaultMaterial = new THREE.MeshStandardMaterial({ color: 0x3b82f6, roughness: 0.3, metalness: 0.2 });
-        const highlightMaterial = new THREE.MeshStandardMaterial({ color: 0x10b981, emissive: 0x059669, emissiveIntensity: 0.5 });
-        const arrowMaterial = new THREE.MeshStandardMaterial({ color: 0xffffff });
+        const arrowMaterial = new THREE.MeshStandardMaterial({ color: 0xaaaaaa });
+        const highlightEmissive = 0x666666;
 
         // --- Object Creation ---
 
-        function addMesh(geometry, type = 'node', position = null) {
+        function addMesh(geometry, type = 'cube', position = null, colorHex = '#3b82f6') {
             const x = position ? position.x : (Math.random() - 0.5) * 4;
             const z = position ? position.z : (Math.random() - 0.5) * 4;
             const y = position ? position.y : 2;
             
-            const mesh = new THREE.Mesh(geometry, defaultMaterial.clone());
+            // Create specific material for this object so we can change its color individually
+            const material = new THREE.MeshStandardMaterial({ 
+                color: colorHex, 
+                roughness: 0.3, 
+                metalness: 0.2 
+            });
+
+            const mesh = new THREE.Mesh(geometry, material);
             mesh.position.set(x, y, z);
             mesh.castShadow = true;
             mesh.receiveShadow = true;
-            mesh.userData = { type: type, id: Math.random().toString(36).substr(2, 9), label: "" };
+            
+            // Rotate cylinder to stand up if needed, but CylinderGeometry defaults to upright Y-axis.
+            // Diamond (Octahedron) needs no rotation usually.
+            // Capsule defaults upright.
+            
+            mesh.userData = { 
+                type: type, 
+                id: Math.random().toString(36).substr(2, 9), 
+                label: "",
+                baseColor: colorHex 
+            };
             
             scene.add(mesh);
             objects.push(mesh);
@@ -366,12 +414,15 @@
             sprite.userData = { type: 'label' };
 
             if (parentMesh) {
-                // If attached to a parent, put it slightly above
-                sprite.position.set(0, 2, 0);
+                // Calculate height offset based on geometry
+                let yOffset = 2;
+                if (parentMesh.geometry.type === 'CylinderGeometry') yOffset = 2.5;
+                if (parentMesh.geometry.type === 'CapsuleGeometry') yOffset = 2.5;
+
+                sprite.position.set(0, yOffset, 0);
                 parentMesh.add(sprite);
-                parentMesh.userData.label = text; // Store text on parent for AI context
+                parentMesh.userData.label = text;
             } else {
-                // Standalone label
                 sprite.position.set(0, 3, 0);
                 scene.add(sprite);
                 objects.push(sprite);
@@ -380,26 +431,44 @@
             return sprite;
         }
 
-        // --- Button Listeners ---
+        // --- Geometry Helpers ---
         document.getElementById('add-cube').addEventListener('click', () => {
-            const mesh = addMesh(new THREE.BoxGeometry(2, 2, 2));
+            const mesh = addMesh(new THREE.BoxGeometry(2, 2, 2), 'cube', null, document.getElementById('obj-color').value);
             selectObject(mesh);
         });
-
         document.getElementById('add-sphere').addEventListener('click', () => {
-            const mesh = addMesh(new THREE.SphereGeometry(1.2, 32, 32));
+            const mesh = addMesh(new THREE.SphereGeometry(1.2, 32, 32), 'sphere', null, document.getElementById('obj-color').value);
             selectObject(mesh);
         });
-
-        document.getElementById('add-custom').addEventListener('click', () => {
-            const mesh = addMesh(new THREE.TorusGeometry(1, 0.4, 16, 100));
+        document.getElementById('add-cylinder').addEventListener('click', () => {
+            // Database shape
+            const mesh = addMesh(new THREE.CylinderGeometry(1, 1, 2.5, 32), 'cylinder', null, document.getElementById('obj-color').value);
             selectObject(mesh);
         });
-
+        document.getElementById('add-diamond').addEventListener('click', () => {
+            // Decision shape (Octahedron looks like a 3D diamond)
+            const mesh = addMesh(new THREE.OctahedronGeometry(1.5, 0), 'diamond', null, document.getElementById('obj-color').value);
+            selectObject(mesh);
+        });
+        document.getElementById('add-capsule').addEventListener('click', () => {
+            // Start/End shape
+            const mesh = addMesh(new THREE.CapsuleGeometry(0.8, 1, 4, 16), 'capsule', null, document.getElementById('obj-color').value);
+            selectObject(mesh);
+        });
         document.getElementById('add-text').addEventListener('click', () => {
-            const text = prompt("Enter label text:", "Flow Node");
+            const text = prompt("Enter label text:", "Node");
             if (!text) return;
             addLabel(text);
+        });
+
+        // --- Color Picker Logic ---
+        const colorPicker = document.getElementById('obj-color');
+        colorPicker.addEventListener('input', (e) => {
+            const hex = e.target.value;
+            if (selectedObject && selectedObject.userData.type !== 'label') {
+                selectedObject.material.color.set(hex);
+                selectedObject.userData.baseColor = hex; // Update stored base color
+            }
         });
 
         // --- Connections ---
@@ -434,10 +503,6 @@
             arrows.forEach(arrow => {
                 const start = arrow.source.position.clone();
                 const end = arrow.target.position.clone();
-                
-                // Adjust start/end to account for parent position if they are children (like labels, though we usually connect meshes)
-                // Currently we only connect top-level meshes so .position is fine.
-                
                 const distance = start.distanceTo(end);
                 arrow.group.position.copy(start);
                 arrow.group.lookAt(end);
@@ -454,18 +519,26 @@
         const mouse = new THREE.Vector2();
 
         function selectObject(obj) {
+            // Deselect previous
             if (selectedObject && selectedObject.userData.type !== 'label') {
-                 if(selectedObject !== connectSource) selectedObject.material = defaultMaterial.clone();
+                if (selectedObject !== connectSource) {
+                    selectedObject.material.emissive.setHex(0x000000); // Turn off glow
+                }
             }
 
             selectedObject = obj;
 
             if (selectedObject) {
-                // If it's a label attached to a parent, don't attach controls to the label itself, but maybe the parent?
-                // For now, we only support selecting top level objects or standalone labels
                 transformControl.attach(selectedObject);
-                if(selectedObject.userData.type !== 'label') {
-                   if(selectedObject !== connectSource) selectedObject.material = new THREE.MeshStandardMaterial({ color: 0x60a5fa });
+                
+                // Handle color picker update
+                if (selectedObject.userData.type !== 'label') {
+                     // Highlight current selection
+                    if (selectedObject !== connectSource) {
+                        selectedObject.material.emissive.setHex(0x333333); // Subtle glow
+                    }
+                    // Sync color picker
+                    colorPicker.value = '#' + selectedObject.material.color.getHexString();
                 }
             } else {
                 transformControl.detach();
@@ -484,7 +557,6 @@
 
             if (intersects.length > 0) {
                 const clickedObj = intersects[0].object;
-                
                 if (isConnectMode) {
                     handleConnectionClick(clickedObj);
                 } else {
@@ -504,7 +576,7 @@
             if (isConnectMode) {
                 connectBtn.classList.add('active');
                 statusBar.style.opacity = '1';
-                statusBar.innerText = "Select Source Object";
+                statusBar.innerText = "Select Source Node";
                 transformControl.detach();
             } else {
                 resetConnectMode();
@@ -512,13 +584,12 @@
         });
 
         function handleConnectionClick(obj) {
-            // Don't allow connecting to labels for now, just nodes
-            if(obj.userData.type === 'label') return;
+            if(obj.userData.type === 'label') return; // No connecting labels
 
             if (!connectSource) {
                 connectSource = obj;
-                obj.material = highlightMaterial;
-                statusBar.innerText = "Select Target Object";
+                obj.material.emissive.setHex(0x00ff00); // Strong green glow
+                statusBar.innerText = "Select Target Node";
             } else {
                 if (connectSource !== obj) {
                     createArrow(connectSource, obj);
@@ -532,12 +603,15 @@
         function resetConnectMode() {
             isConnectMode = false;
             if (connectSource && connectSource.userData.type !== 'label') {
-                connectSource.material = defaultMaterial.clone();
+                connectSource.material.emissive.setHex(0x000000); // Reset glow
             }
             connectSource = null;
             connectBtn.classList.remove('active');
             statusBar.style.opacity = '0';
-            if(selectedObject) transformControl.attach(selectedObject);
+            if(selectedObject) {
+                transformControl.attach(selectedObject);
+                if (selectedObject.userData.type !== 'label') selectedObject.material.emissive.setHex(0x333333);
+            }
         }
 
         // Delete
@@ -567,7 +641,6 @@
 
         // --- AI Features ---
 
-        // 1. AI Generate Flow
         const promptModal = document.getElementById('prompt-modal');
         const promptInput = document.getElementById('ai-prompt-input');
         const confirmPromptBtn = document.getElementById('confirm-prompt');
@@ -578,91 +651,85 @@
             promptInput.focus();
         });
 
-        closePromptBtn.addEventListener('click', () => {
-            promptModal.style.display = 'none';
-        });
+        closePromptBtn.addEventListener('click', () => { promptModal.style.display = 'none'; });
 
         confirmPromptBtn.addEventListener('click', async () => {
             const userInput = promptInput.value.trim();
             if (!userInput) return;
-
-            // Close modal and show loading state (reuse result modal for loading?)
             promptModal.style.display = 'none';
-            
-            // Show a simple loading toast or similar? Let's use status bar
             statusBar.style.opacity = '1';
-            statusBar.innerHTML = `<span class="loader"></span> Generating Flow...`;
+            statusBar.innerHTML = `<span class="loader"></span> Designing Flow...`;
 
             const systemPrompt = `
-                You are a 3D Flow Diagram Generator. 
-                The user will ask for a process or system.
-                You must return strictly valid JSON (no markdown formatting).
-                The JSON must have this structure:
+                You are a 3D Flow Diagram Architect. Return strictly valid JSON.
+                
+                Shapes/Types:
+                - "cube" (Standard Process/Step)
+                - "sphere" (State/Entity)
+                - "cylinder" (Database/Storage)
+                - "diamond" (Decision/Gateway)
+                - "capsule" (Start/End/Terminator)
+
+                Colors (Hex):
+                - Use Semantic Colors (e.g., #ef4444 for Errors, #22c55e for Success, #3b82f6 for default, #eab308 for warnings).
+                
+                Schema:
                 {
-                    "nodes": [ { "label": "Start", "type": "cube" }, { "label": "Step 1", "type": "sphere" } ],
+                    "nodes": [ { "label": "Start", "type": "capsule", "color": "#22c55e" } ],
                     "edges": [ { "from": 0, "to": 1 } ]
                 }
-                "type" can be "cube" or "sphere". 
-                Keep labels short (max 3 words).
-                Create a logical flow. Limit to 20 nodes max.
+                Limit to 12 nodes.
             `;
 
             const resultStr = await callGemini(userInput, systemPrompt);
 
             if (resultStr) {
                 try {
-                    // Clean the result string in case model wraps in markdown
                     const cleanJson = resultStr.replace(/```json/g, '').replace(/```/g, '').trim();
                     const data = JSON.parse(cleanJson);
-                    
                     buildFlowFromAI(data);
                     statusBar.innerText = "Flow Generated!";
                     setTimeout(() => statusBar.style.opacity = '0', 3000);
                 } catch (e) {
-                    console.error("Parsing Error", e);
-                    alert("Failed to parse AI response. Try again.");
+                    console.error(e);
+                    alert("AI Error. See console.");
                     statusBar.style.opacity = '0';
                 }
             } else {
                 statusBar.innerText = "Generation Failed.";
-                setTimeout(() => statusBar.style.opacity = '0', 3000);
             }
         });
 
         function buildFlowFromAI(data) {
-            // Clear scene? No, let's append but move camera or offset? 
-            // Let's clear scene for a fresh flow to avoid mess.
-            while(objects.length > 0) {
-                selectedObject = objects[0]; // Hack to use deleteSelected
-                deleteSelected();
-            }
+            while(objects.length > 0) { selectedObject = objects[0]; deleteSelected(); }
 
             const createdMeshes = [];
             const spacingX = 6;
             const spacingZ = 5;
-            const columns = 4; // Max width before wrapping
+            const columns = 3; 
 
             data.nodes.forEach((node, index) => {
-                // Simple Grid Layout
                 const col = index % columns;
                 const row = Math.floor(index / columns);
                 
-                const x = (col * spacingX) - (columns * spacingX / 2) + 3;
-                const z = (row * spacingZ); // Start at 0 and go down (+Z)
+                // Staggered grid
+                const x = (col * spacingX) - ((columns * spacingX) / 2) + (row % 2 === 0 ? 0 : 3);
+                const z = (row * spacingZ) - 5;
                 
                 let geo;
-                if (node.type === 'sphere') geo = new THREE.SphereGeometry(1.2, 32, 32);
-                else geo = new THREE.BoxGeometry(2, 2, 2); // default cube
+                switch(node.type) {
+                    case 'sphere': geo = new THREE.SphereGeometry(1.2, 32, 32); break;
+                    case 'cylinder': geo = new THREE.CylinderGeometry(1, 1, 2.5, 32); break;
+                    case 'diamond': geo = new THREE.OctahedronGeometry(1.5, 0); break;
+                    case 'capsule': geo = new THREE.CapsuleGeometry(0.8, 1, 4, 16); break;
+                    default: geo = new THREE.BoxGeometry(2, 2, 2); break;
+                }
 
-                const mesh = addMesh(geo, 'node', { x, y: 2, z });
-                
-                // Add label
+                const mesh = addMesh(geo, node.type, { x, y: 2, z }, node.color || '#3b82f6');
                 addLabel(node.label, mesh);
-                
                 createdMeshes.push(mesh);
             });
 
-            // Create connections
             data.edges.forEach(edge => {
                 if (createdMeshes[edge.from] && createdMeshes[edge.to]) {
                     createArrow(createdMeshes[edge.from], createdMeshes[edge.to]);
@@ -670,51 +737,48 @@
             });
         }
 
-        // 2. AI Explain Flow
+        // Explain Logic
         const resultModal = document.getElementById('result-modal');
         const explanationText = document.getElementById('ai-explanation-text');
         const closeResultBtn = document.getElementById('close-result');
 
         document.getElementById('ai-explain').addEventListener('click', async () => {
             resultModal.style.display = 'flex';
-            explanationText.innerHTML = '<span class="loader"></span> Analyzing 3D Scene...';
+            explanationText.innerHTML = '<span class="loader"></span> Analyzing Architecture...';
 
-            // Serialize Scene
             const sceneData = {
-                nodes: objects.filter(o => o.userData.type !== 'label').map((o, i) => ({
-                    id: o.userData.id,
-                    label: o.userData.label || "Unnamed Node",
-                    type: o.geometry.type
+                nodes: objects.filter(o => o.userData.type !== 'label').map(o => ({
+                    label: o.userData.label || "Unnamed",
+                    type: o.userData.type,
+                    color: o.userData.baseColor
                 })),
                 connections: arrows.map(a => ({
-                    from: a.source.userData.label || "Unnamed",
-                    to: a.target.userData.label || "Unnamed"
+                    from: a.source.userData.label,
+                    to: a.target.userData.label
                 }))
             };
 
             if (sceneData.nodes.length === 0) {
-                explanationText.innerText = "Scene is empty. Add some nodes!";
+                explanationText.innerText = "Canvas is empty.";
                 return;
             }
 
             const prompt = `
-                Analyze this flow diagram structure and explain what this system/process likely does.
-                Nodes: ${JSON.stringify(sceneData.nodes)}
+                Analyze this 3D architecture diagram.
+                Nodes (includes shape & color): ${JSON.stringify(sceneData.nodes)}
                 Connections: ${JSON.stringify(sceneData.connections)}
                 
-                Provide a concise summary of the flow.
+                Interpret the colors (e.g., Red often means error/stop, Green start/success) and shapes (Cylinders=Databases, Diamonds=Decisions).
+                Explain the flow's logic.
             `;
 
-            const explanation = await callGemini(prompt, "You are a System Architect expert.");
-            
+            const explanation = await callGemini(prompt, "You are a Senior System Architect.");
             explanationText.innerText = explanation;
         });
 
-        closeResultBtn.addEventListener('click', () => {
-            resultModal.style.display = 'none';
-        });
+        closeResultBtn.addEventListener('click', () => { resultModal.style.display = 'none'; });
 
-        // --- Animation Loop ---
+        // Loop
         function animate() {
             requestAnimationFrame(animate);
             orbit.update();

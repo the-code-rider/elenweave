@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>3D Flow Diagram Playground v4</title>
+    <title>3D Flow Diagram Playground v6</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body { margin: 0; overflow: hidden; background-color: #1a1a1a; color: white; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
@@ -29,7 +29,7 @@
             overflow-y: auto;
         }
 
-        /* Top Right Info Panel (Code Block) */
+        /* Top Right Info Panel */
         #info-panel {
             position: absolute;
             top: 20px;
@@ -66,11 +66,7 @@
             color: #a5f3fc; /* Cyan tint for code */
         }
 
-        .tool-section {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
+        .tool-section { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 
         .tool-btn {
             background: #333;
@@ -88,14 +84,11 @@
             font-weight: 500;
             width: 100%;
         }
-
         .tool-btn.full-width { grid-column: span 2; }
-
         .tool-btn:hover { background: #444; border-color: #777; }
         .tool-btn.active { background: #3b82f6; border-color: #2563eb; color: white; }
         .tool-btn.danger:hover { background: #ef4444; border-color: #dc2626; }
         
-        /* AI Gradient Button */
         .tool-btn.ai { 
             background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
             border: 1px solid #8b5cf6;
@@ -105,11 +98,7 @@
         .tool-btn.ai:hover { filter: brightness(1.1); box-shadow: 0 0 10px rgba(124, 58, 237, 0.3); }
 
         /* Animation Controls */
-        .anim-controls {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 4px;
-        }
+        .anim-controls { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4px; }
         .tool-btn.play { background: #059669; border-color: #047857; color: white; }
         .tool-btn.pause { background: #d97706; border-color: #b45309; color: white; }
         .tool-btn.stop { background: #dc2626; border-color: #b91c1c; color: white; }
@@ -117,25 +106,11 @@
         .divider { height: 1px; background: #444; margin: 4px 0; }
         .label-sm { font-size: 0.7rem; text-transform: uppercase; color: #888; letter-spacing: 0.05em; margin-bottom: 2px; }
 
-        /* Color Picker & Toggles */
         .prop-row {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            background: #222;
-            padding: 8px;
-            border-radius: 6px;
-            border: 1px solid #444;
+            display: flex; align-items: center; justify-content: space-between;
+            background: #222; padding: 8px; border-radius: 6px; border: 1px solid #444;
         }
-        input[type="color"] {
-            -webkit-appearance: none;
-            border: none;
-            width: 24px;
-            height: 24px;
-            border-radius: 4px;
-            cursor: pointer;
-            background: none;
-        }
+        input[type="color"] { -webkit-appearance: none; border: none; width: 24px; height: 24px; border-radius: 4px; cursor: pointer; background: none; }
         input[type="color"]::-webkit-color-swatch-wrapper { padding: 0; }
         input[type="color"]::-webkit-color-swatch { border: none; border-radius: 4px; }
 
@@ -144,86 +119,48 @@
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #555; transition: .4s; border-radius: 34px; }
         .slider:before { position: absolute; content: ""; height: 12px; width: 12px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: #f97316; } /* Orange for explain nodes */
+        input:checked + .slider { background-color: #f97316; }
         input:checked + .slider:before { transform: translateX(16px); }
 
-        /* Status Bar & Subtitles */
+        /* Diagram Select */
+        select.diagram-select {
+            width: 100%;
+            background: #222; color: #eee; border: 1px solid #444;
+            padding: 6px; border-radius: 4px; font-size: 0.8rem; outline: none; margin-bottom: 6px;
+        }
+
         #status-bar {
-            position: absolute;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.7);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.3s;
-            z-index: 20;
+            position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.7); padding: 8px 16px; border-radius: 20px;
+            font-size: 0.9rem; pointer-events: none; opacity: 0; transition: opacity 0.3s; z-index: 20;
         }
 
         #subtitle-overlay {
-            position: absolute;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(4px);
-            padding: 16px 24px;
-            border-radius: 8px;
-            font-size: 1.1rem;
-            color: #fff;
-            text-align: center;
-            max-width: 600px;
-            border: 1px solid rgba(255,255,255,0.2);
-            display: none;
-            z-index: 15;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8); backdrop-filter: blur(4px);
+            padding: 16px 24px; border-radius: 8px; font-size: 1.1rem; color: #fff;
+            text-align: center; max-width: 600px; border: 1px solid rgba(255,255,255,0.2);
+            display: none; z-index: 15; box-shadow: 0 4px 20px rgba(0,0,0,0.5);
         }
 
-        /* Modal Styles */
         .modal-overlay {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.7);
-            z-index: 100;
-            align-items: center;
-            justify-content: center;
-            backdrop-filter: blur(4px);
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.7); z-index: 100; align-items: center; justify-content: center; backdrop-filter: blur(4px);
         }
         .modal-content {
-            background: #1e1e1e;
-            border: 1px solid #444;
-            border-radius: 12px;
-            padding: 24px;
-            width: 90%;
-            max-width: 500px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            background: #1e1e1e; border: 1px solid #444; border-radius: 12px; padding: 24px;
+            width: 90%; max-width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
         }
         .modal-input {
-            width: 100%;
-            background: #333;
-            border: 1px solid #555;
-            color: white;
-            padding: 10px;
-            border-radius: 6px;
-            margin: 10px 0 20px 0;
-            font-size: 1rem;
+            width: 100%; background: #333; border: 1px solid #555; color: white; padding: 10px;
+            border-radius: 6px; margin: 10px 0 20px 0; font-size: 1rem;
         }
         .modal-input:focus { outline: none; border-color: #3b82f6; }
         .modal-footer { display: flex; justify-content: flex-end; gap: 10px; }
         
         .loader {
-            border: 3px solid #f3f3f3;
-            border-top: 3px solid #3498db;
-            border-radius: 50%;
-            width: 20px;
-            height: 20px;
-            animation: spin 1s linear infinite;
-            display: inline-block;
-            margin-right: 8px;
+            border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; width: 20px; height: 20px;
+            animation: spin 1s linear infinite; display: inline-block; margin-right: 8px;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
@@ -240,7 +177,7 @@
 <body>
 
     <div id="ui-panel">
-        <h1 class="text-lg font-bold text-center text-blue-400">FlowBuilder 4.0</h1>
+        <h1 class="text-lg font-bold text-center text-blue-400">FlowBuilder 6.0</h1>
         
         <!-- AI Section -->
         <div class="label-sm text-purple-400 mt-1">AI Director</div>
@@ -251,21 +188,22 @@
             </button>
             <button class="tool-btn ai full-width" id="ai-explain-btn">
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path></svg>
-                Interactive Explain
+                Explain Active
             </button>
         </div>
 
         <div class="divider"></div>
 
-        <!-- Filter Section -->
-        <div class="label-sm text-orange-400">Filters</div>
-        <div class="prop-row">
-            <span class="text-xs text-gray-300">Show 'Explain' Nodes</span>
-            <label class="toggle-switch">
-                <input type="checkbox" id="toggle-explain" checked>
-                <span class="slider"></span>
-            </label>
-        </div>
+        <!-- Diagram List -->
+        <div class="label-sm text-blue-300">Active Diagram</div>
+        <select id="diagram-select" class="diagram-select">
+            <option value="manual">Manual Canvas</option>
+        </select>
+        
+        <div class="label-sm text-orange-300" id="expl-label" style="display:none">Explanation View</div>
+        <select id="explanation-select" class="diagram-select" style="display:none">
+            <option value="main">Main Flow</option>
+        </select>
 
         <div class="divider"></div>
 
@@ -376,7 +314,7 @@
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x111111);
         
-        const gridHelper = new THREE.GridHelper(100, 100, 0x444444, 0x222222);
+        const gridHelper = new THREE.GridHelper(500, 500, 0x444444, 0x222222);
         scene.add(gridHelper);
 
         const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 1000);
@@ -403,15 +341,20 @@
         let selectedObject = null;
         let isConnectMode = false;
         let connectSource = null;
-        let explainNodesVisible = true;
         
+        // Diagram State
+        // { id, name, offsetX, mainSequence: [], explanations: [ { id, query, sequence: [], nodeIds: [] } ] }
+        const diagrams = []; 
+        let activeDiagramId = "manual";
+        let activeExplanationId = "main"; // "main" or explanation ID
+        let nextDiagramOffsetX = 0;
+
         // Animation State
         let animState = {
             isPlaying: false,
             isPaused: false,
             currentIndex: 0,
-            startTime: 0,
-            sequence: [], // [{ targetId, duration, hold, text, codeSnippet }]
+            sequence: [], // Active sequence
             cameraStartPos: new THREE.Vector3(),
             cameraStartTarget: new THREE.Vector3(),
             targetPos: new THREE.Vector3(),
@@ -437,10 +380,12 @@
 
         // --- Object Creation ---
 
-        function addMesh(geometry, type = 'cube', position = null, colorHex = '#3b82f6', category = 'standard') {
+        function addMesh(geometry, type = 'cube', position = null, colorHex = '#3b82f6', category = 'standard', diagramId = 'manual', explanationId = null) {
             const x = position ? position.x : (Math.random() - 0.5) * 4;
             const z = position ? position.z : (Math.random() - 0.5) * 4;
-            const y = position ? position.y : 2;
+            // Standard nodes at 2, Explain at 8
+            const defaultY = category === 'explain' ? 8 : 2;
+            const y = position && position.y !== undefined ? position.y : defaultY;
             
             const material = new THREE.MeshStandardMaterial({ 
                 color: colorHex, 
@@ -458,17 +403,15 @@
                 id: Math.random().toString(36).substr(2, 9), 
                 label: "",
                 baseColor: colorHex,
-                category: category // 'standard' or 'explain'
+                category: category,
+                diagramId: diagramId,
+                explanationId: explanationId // Track which explanation spawned this
             };
             
             scene.add(mesh);
             objects.push(mesh);
             
-            // Check visibility filter immediately
-            if (category === 'explain' && !explainNodesVisible) {
-                mesh.visible = false;
-                // Also hide any attached labels? Handled in loop
-            }
+            updateVisibility(); // Re-check visibility
             
             return mesh;
         }
@@ -478,25 +421,11 @@
             const ctx = canvas.getContext('2d');
             canvas.width = 512;
             canvas.height = 128;
-            
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.0)';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)';
-            ctx.beginPath();
-            ctx.roundRect(10, 10, 492, 108, 30);
-            ctx.fill();
-            
-            ctx.strokeStyle = '#3b82f6';
-            ctx.lineWidth = 6;
-            ctx.stroke();
-
-            ctx.font = 'bold 60px Arial';
-            ctx.fillStyle = 'white';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.0)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.6)'; ctx.beginPath(); ctx.roundRect(10, 10, 492, 108, 30); ctx.fill();
+            ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 6; ctx.stroke();
+            ctx.font = 'bold 60px Arial'; ctx.fillStyle = 'white'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
             ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-            
             return new THREE.CanvasTexture(canvas);
         }
 
@@ -506,76 +435,53 @@
             const sprite = new THREE.Sprite(material);
             sprite.scale.set(4, 1, 1);
             sprite.userData = { type: 'label' };
-
             if (parentMesh) {
                 let yOffset = 2;
                 if (parentMesh.geometry.type === 'CylinderGeometry') yOffset = 2.5;
                 if (parentMesh.geometry.type === 'CapsuleGeometry') yOffset = 2.5;
-
+                if (parentMesh.userData.category === 'explain') yOffset = 2;
                 sprite.position.set(0, yOffset, 0);
                 parentMesh.add(sprite);
                 parentMesh.userData.label = text;
             } else {
-                sprite.position.set(0, 3, 0);
-                scene.add(sprite);
-                objects.push(sprite);
-                selectObject(sprite);
+                sprite.position.set(0, 3, 0); scene.add(sprite); objects.push(sprite); selectObject(sprite);
             }
             return sprite;
         }
 
         // --- Helpers ---
-        document.getElementById('add-cube').addEventListener('click', () => addMesh(new THREE.BoxGeometry(2, 2, 2), 'cube', null, document.getElementById('obj-color').value));
-        document.getElementById('add-sphere').addEventListener('click', () => addMesh(new THREE.SphereGeometry(1.2, 32, 32), 'sphere', null, document.getElementById('obj-color').value));
-        document.getElementById('add-cylinder').addEventListener('click', () => addMesh(new THREE.CylinderGeometry(1, 1, 2.5, 32), 'cylinder', null, document.getElementById('obj-color').value));
-        document.getElementById('add-diamond').addEventListener('click', () => addMesh(new THREE.OctahedronGeometry(1.5, 0), 'diamond', null, document.getElementById('obj-color').value));
-        document.getElementById('add-capsule').addEventListener('click', () => addMesh(new THREE.CapsuleGeometry(0.8, 1, 4, 16), 'capsule', null, document.getElementById('obj-color').value));
-        document.getElementById('add-text').addEventListener('click', () => {
-            const text = prompt("Enter label text:", "Node");
-            if (text) addLabel(text);
-        });
+        document.getElementById('add-cube').addEventListener('click', () => addMesh(new THREE.BoxGeometry(2, 2, 2), 'cube', null, document.getElementById('obj-color').value, 'standard', activeDiagramId));
+        document.getElementById('add-sphere').addEventListener('click', () => addMesh(new THREE.SphereGeometry(1.2, 32, 32), 'sphere', null, document.getElementById('obj-color').value, 'standard', activeDiagramId));
+        document.getElementById('add-cylinder').addEventListener('click', () => addMesh(new THREE.CylinderGeometry(1, 1, 2.5, 32), 'cylinder', null, document.getElementById('obj-color').value, 'standard', activeDiagramId));
+        document.getElementById('add-diamond').addEventListener('click', () => addMesh(new THREE.OctahedronGeometry(1.5, 0), 'diamond', null, document.getElementById('obj-color').value, 'standard', activeDiagramId));
+        document.getElementById('add-capsule').addEventListener('click', () => addMesh(new THREE.CapsuleGeometry(0.8, 1, 4, 16), 'capsule', null, document.getElementById('obj-color').value, 'standard', activeDiagramId));
+        document.getElementById('add-text').addEventListener('click', () => { const text = prompt("Enter label text:", "Node"); if (text) addLabel(text); });
 
         // --- Connections ---
         function createArrow(source, target) {
             const arrowGroup = new THREE.Group();
             const shaftGeo = new THREE.CylinderGeometry(0.08, 0.08, 1, 8);
-            shaftGeo.rotateX(Math.PI / 2);
-            shaftGeo.translate(0, 0, 0.5);
+            shaftGeo.rotateX(Math.PI / 2); shaftGeo.translate(0, 0, 0.5);
             const shaft = new THREE.Mesh(shaftGeo, arrowMaterial);
-            
             const headGeo = new THREE.ConeGeometry(0.35, 0.8, 12);
             headGeo.rotateX(Math.PI / 2);
             const head = new THREE.Mesh(headGeo, arrowHeadMaterial);
+            arrowGroup.add(shaft); arrowGroup.add(head); scene.add(arrowGroup);
             
-            arrowGroup.add(shaft);
-            arrowGroup.add(head);
-            scene.add(arrowGroup);
-            
-            // Assign category based on source node
-            arrowGroup.userData = { category: source.userData.category || 'standard' };
-
+            arrowGroup.userData = { category: source.userData.category || 'standard', explanationId: source.userData.explanationId };
             arrows.push({ group: arrowGroup, source, target, shaft, head });
-            
-            // Check visibility
-            if (arrowGroup.userData.category === 'explain' && !explainNodesVisible) {
-                arrowGroup.visible = false;
-            }
+            updateVisibility();
         }
 
         function updateArrows() {
             arrows.forEach(arrow => {
-                // If either connected node is hidden (deleted or invisible), hide arrow
+                // If connected nodes hidden, hide arrow
                 if (!arrow.source.parent || !arrow.target.parent || !arrow.source.visible || !arrow.target.visible) {
                     arrow.group.visible = false;
                     return;
                 }
-                
-                // Restore visibility if it was hidden due to parent state but now valid
-                // ONLY if category filter allows it
-                if ((arrow.group.userData.category === 'standard') || 
-                    (arrow.group.userData.category === 'explain' && explainNodesVisible)) {
-                    arrow.group.visible = true;
-                }
+                // If nodes are visible, arrow is visible
+                arrow.group.visible = true;
 
                 const start = arrow.source.position.clone();
                 const end = arrow.target.position.clone();
@@ -589,19 +495,93 @@
             });
         }
 
-        // --- UI Features: Toggle Explain Nodes ---
-        document.getElementById('toggle-explain').addEventListener('change', (e) => {
-            explainNodesVisible = e.target.checked;
-            
-            // Toggle Mesh Visibility
+        // --- UI Logic: Visibilty & Selection ---
+        const diagramSelect = document.getElementById('diagram-select');
+        const explanationSelect = document.getElementById('explanation-select');
+        const explLabel = document.getElementById('expl-label');
+
+        function updateVisibility() {
             objects.forEach(obj => {
+                // 1. Check Diagram
+                if (obj.userData.diagramId !== activeDiagramId) {
+                    obj.visible = false;
+                    return;
+                }
+
+                // 2. Check Explanation
+                // Standard nodes always show for active diagram
+                if (obj.userData.category === 'standard') {
+                    obj.visible = true;
+                    return;
+                }
+
+                // Explain nodes: only show if they belong to active explanation
                 if (obj.userData.category === 'explain') {
-                    obj.visible = explainNodesVisible;
+                    if (activeExplanationId !== 'main' && obj.userData.explanationId === activeExplanationId) {
+                        obj.visible = true;
+                    } else {
+                        obj.visible = false;
+                    }
                 }
             });
+        }
 
-            // Arrows update automatically in updateArrows loop based on node visibility
+        diagramSelect.addEventListener('change', (e) => {
+            activeDiagramId = e.target.value;
+            activeExplanationId = 'main'; // Reset to main
+            
+            updateExplanationUI();
+            updateCameraAndSequence();
+            updateVisibility();
         });
+
+        explanationSelect.addEventListener('change', (e) => {
+            activeExplanationId = e.target.value;
+            updateCameraAndSequence();
+            updateVisibility();
+        });
+
+        function updateExplanationUI() {
+            const diag = diagrams.find(d => d.id === activeDiagramId);
+            explanationSelect.innerHTML = `<option value="main">Main Flow</option>`;
+            
+            if (diag && diag.explanations.length > 0) {
+                explLabel.style.display = 'block';
+                explanationSelect.style.display = 'block';
+                diag.explanations.forEach(ex => {
+                    const opt = document.createElement('option');
+                    opt.value = ex.id;
+                    opt.text = ex.query.substring(0, 25) + "...";
+                    explanationSelect.appendChild(opt);
+                });
+            } else {
+                explLabel.style.display = 'none';
+                explanationSelect.style.display = 'none';
+            }
+            explanationSelect.value = activeExplanationId;
+        }
+
+        function updateCameraAndSequence() {
+            const diag = diagrams.find(d => d.id === activeDiagramId);
+            if (!diag) return;
+
+            // 1. Determine Active Sequence
+            if (activeExplanationId === 'main') {
+                animState.sequence = diag.mainSequence || [];
+            } else {
+                const exp = diag.explanations.find(e => e.id === activeExplanationId);
+                animState.sequence = exp ? exp.sequence : [];
+            }
+
+            stopAnimation();
+
+            // 2. Move Camera (if diagram changed, but we are already handling activeDiagramId logic)
+            const targetX = diag.offsetX || 0;
+            const destPos = new THREE.Vector3(targetX + 15, 15, 15);
+            const destLook = new THREE.Vector3(targetX, 0, 0);
+            camera.position.copy(destPos);
+            orbit.target.copy(destLook);
+        }
 
         // --- Interaction ---
         const colorPicker = document.getElementById('obj-color');
@@ -614,23 +594,45 @@
 
         const raycaster = new THREE.Raycaster();
         const mouse = new THREE.Vector2();
+        const infoPanel = document.getElementById('info-panel');
+        const infoContent = document.getElementById('info-content');
+        const subtitleOverlay = document.getElementById('subtitle-overlay');
 
         function selectObject(obj) {
             if (selectedObject && selectedObject.userData.type !== 'label' && selectedObject !== connectSource) {
                 selectedObject.material.emissive.setHex(0x000000);
             }
             selectedObject = obj;
-            if (selectedObject) {
-                transformControl.attach(selectedObject);
-                if (selectedObject.userData.type !== 'label') {
-                    if (selectedObject !== connectSource) selectedObject.material.emissive.setHex(0x333333);
-                    colorPicker.value = '#' + selectedObject.material.color.getHexString();
-                }
-                // Update info panel manually on click
-                document.getElementById('info-content').innerText = 
-                    `ID: ${obj.userData.id}\nType: ${obj.userData.type}\nLabel: ${obj.userData.label || 'None'}\nCategory: ${obj.userData.category}`;
-            } else {
+            
+            // Clear Info if deselected
+            if(!selectedObject) {
                 transformControl.detach();
+                infoPanel.style.display = 'none';
+                subtitleOverlay.style.display = 'none';
+                return;
+            }
+
+            transformControl.attach(selectedObject);
+            
+            if (selectedObject.userData.type !== 'label') {
+                if (selectedObject !== connectSource) selectedObject.material.emissive.setHex(0x333333);
+                colorPicker.value = '#' + selectedObject.material.color.getHexString();
+            }
+
+            // --- Smart Info Lookup ---
+            // Check if this node has info in the ACTIVE animation sequence
+            const relatedStep = animState.sequence.find(step => step.targetId === obj.userData.id);
+            
+            if (relatedStep) {
+                infoPanel.style.display = 'block';
+                subtitleOverlay.style.display = 'block'; // Also show subtitle to give context
+                infoContent.innerText = relatedStep.codeSnippet || "// No code attached";
+                subtitleOverlay.innerText = relatedStep.text || "";
+            } else {
+                // Fallback info
+                infoPanel.style.display = 'block';
+                infoContent.innerText = `ID: ${obj.userData.id}\nLabel: ${obj.userData.label || 'None'}\n// No specific script found for this context`;
+                subtitleOverlay.style.display = 'none';
             }
         }
 
@@ -640,7 +642,7 @@
             mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
             mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
             raycaster.setFromCamera(mouse, camera);
-            const intersects = raycaster.intersectObjects(objects.filter(o => o.visible)); // Only raycast visible
+            const intersects = raycaster.intersectObjects(objects.filter(o => o.visible)); 
             if (intersects.length > 0) {
                 if (isConnectMode) handleConnectionClick(intersects[0].object);
                 else selectObject(intersects[0].object);
@@ -690,9 +692,6 @@
         const playBtn = document.getElementById('anim-play');
         const pauseBtn = document.getElementById('anim-pause');
         const stopBtn = document.getElementById('anim-stop');
-        const subtitleOverlay = document.getElementById('subtitle-overlay');
-        const infoPanel = document.getElementById('info-panel');
-        const infoContent = document.getElementById('info-content');
 
         playBtn.addEventListener('click', startAnimation);
         pauseBtn.addEventListener('click', () => { animState.isPaused = !animState.isPaused; });
@@ -700,19 +699,20 @@
 
         function startAnimation() {
             if (animState.sequence.length === 0) {
-                // Auto-generate
-                animState.sequence = objects
-                    .filter(o => o.userData.type !== 'label' && o.visible) // Only animate visible nodes
+                // Fallback gen for manual
+                 animState.sequence = objects
+                    .filter(o => o.userData.type !== 'label' && o.visible && o.userData.diagramId === activeDiagramId)
                     .map(o => ({ 
-                        targetId: o.userData.id, 
-                        duration: 1500, 
-                        hold: 1000, 
-                        text: o.userData.label || "Viewing Node",
-                        codeSnippet: `// Node: ${o.userData.label}\n// Type: ${o.userData.type}`
+                        targetId: o.userData.id, duration: 1500, hold: 1000, text: o.userData.label || "Node", codeSnippet: "// Manual Node" 
                     }));
             }
             
-            if (animState.sequence.length === 0) return;
+            if (animState.sequence.length === 0) {
+                statusBar.innerText = "No animation steps found.";
+                statusBar.style.opacity = '1';
+                setTimeout(() => statusBar.style.opacity = '0', 2000);
+                return;
+            }
 
             if (!animState.isPlaying) {
                 animState.isPlaying = true;
@@ -747,8 +747,8 @@
             const step = animState.sequence[index];
             const targetObj = objects.find(o => o.userData.id === step.targetId);
 
-            // Skip if node is deleted or hidden by filter
             if (!targetObj || !targetObj.visible) {
+                // Skip invisible steps
                 prepareStep(index + 1);
                 return;
             }
@@ -765,10 +765,8 @@
             
             subtitleOverlay.innerText = step.text;
             infoContent.innerText = step.codeSnippet || "// No details available";
-            
             statusBar.style.opacity = '1';
             statusBar.innerText = `Step ${index + 1}/${animState.sequence.length}`;
-            
             selectObject(targetObj);
         }
 
@@ -782,10 +780,8 @@
             if (animState.phase === 'MOVING') {
                 const progress = Math.min(elapsed / step.duration, 1);
                 const ease = 1 - Math.pow(1 - progress, 3);
-
                 camera.position.lerpVectors(animState.cameraStartPos, animState.targetPos, ease);
                 orbit.target.lerpVectors(animState.cameraStartTarget, animState.targetLookAt, ease);
-
                 if (progress >= 1) {
                     animState.phase = 'HOLDING';
                     animState.lastStepTime = now;
@@ -798,7 +794,7 @@
             }
         }
 
-        // --- AI Modal & Features ---
+        // --- AI Features ---
         const promptModal = document.getElementById('prompt-modal');
         const modalTitle = document.getElementById('modal-title');
         const modalDesc = document.getElementById('modal-desc');
@@ -806,13 +802,13 @@
         const confirmPromptBtn = document.getElementById('confirm-prompt');
         const closePromptBtn = document.getElementById('close-prompt');
         
-        let currentAiMode = 'generate'; // 'generate' or 'explain'
+        let currentAiMode = 'generate'; 
 
         document.getElementById('ai-generate-btn').addEventListener('click', () => {
             currentAiMode = 'generate';
             modalTitle.innerText = "Generate Flow ✨";
             modalTitle.className = "text-xl font-bold mb-2 text-purple-400";
-            modalDesc.innerText = "Describe the process to create from scratch.";
+            modalDesc.innerText = "Creates a NEW diagram (appended to scene).";
             promptModal.style.display = 'flex';
             promptInput.value = "";
             promptInput.focus();
@@ -822,7 +818,7 @@
             currentAiMode = 'explain';
             modalTitle.innerText = "Interactive Explain 🍊";
             modalTitle.className = "text-xl font-bold mb-2 text-orange-400";
-            modalDesc.innerText = "Ask a question about your flow (e.g. 'What happens on error?'). AI will add nodes if needed.";
+            modalDesc.innerText = `Explain current diagram: ${activeDiagramId}`;
             promptModal.style.display = 'flex';
             promptInput.value = "";
             promptInput.focus();
@@ -837,97 +833,73 @@
             statusBar.style.opacity = '1';
             
             if (currentAiMode === 'generate') {
-                statusBar.innerHTML = `<span class="loader"></span> Generative AI Working...`;
+                statusBar.innerHTML = `<span class="loader"></span> Generating Diagram...`;
                 await handleGenerate(userInput);
             } else {
-                statusBar.innerHTML = `<span class="loader"></span> Analyzing & explaining...`;
+                statusBar.innerHTML = `<span class="loader"></span> Analyzing...`;
                 await handleExplain(userInput);
             }
         });
 
         async function handleGenerate(userInput) {
+            const flowId = `flow_${Date.now()}`;
             const systemPrompt = `
                 You are a 3D Flow Diagram Director.
-                Create a JSON schema.
-                Shapes: "cube", "sphere", "cylinder", "diamond", "capsule".
-                Colors: Semantic Hex.
+                Create a JSON schema for a NEW diagram about: "${userInput}".
+                Prefix all node IDs with "${flowId}_" (e.g., "${flowId}_start").
                 Output JSON:
                 {
-                    "nodes": [ { "id": "n1", "label": "Start", "type": "capsule", "color": "#22c55e" } ],
+                    "title": "Short Title",
+                    "nodes": [ { "id": "${flowId}_n1", "label": "Start", "type": "capsule", "color": "#22c55e" } ],
                     "edges": [ { "from": 0, "to": 1 } ],
                     "animation": [
                         { 
                           "targetIndex": 0, "duration": 2000, "hold": 1500, 
-                          "text": "Subtitle text",
-                          "codeSnippet": "Pseudo-code or technical details displayed in panel"
+                          "text": "Subtitle text", "codeSnippet": "Code info"
                         }
                     ]
                 }
             `;
-            
             const resultStr = await callGemini(userInput, systemPrompt);
-            processAiResponse(resultStr, true);
+            processAiResponse(resultStr, true, flowId, userInput);
         }
 
         async function handleExplain(userInput) {
-            // Serialize current scene to context
-            const sceneContext = objects.filter(o => o.userData.type !== 'label').map(o => ({
-                id: o.userData.id,
-                label: o.userData.label,
-                type: o.userData.type
-            }));
+            const sceneContext = objects
+                .filter(o => o.userData.type !== 'label' && o.userData.diagramId === activeDiagramId)
+                .map(o => ({ id: o.userData.id, label: o.userData.label, type: o.userData.type }));
 
+            const explId = `expl_${Date.now()}`;
             const systemPrompt = `
-                You are an Expert System Explainer.
-                User Query: "${userInput}"
-                Current Scene Nodes: ${JSON.stringify(sceneContext)}
-
-                1. You may ADD NEW NODES to explain the concept (e.g. Error Handlers, Logs). 
-                   Mark new nodes with "category": "explain".
-                   Use distinct color #f97316 (Orange) for new explain nodes.
-                2. Generate an ANIMATION sequence that walks through existing relevant nodes AND your new nodes.
-                3. Provide "codeSnippet" for each step.
-
+                You are an Expert System Explainer. User Query: "${userInput}"
+                Context Nodes: ${JSON.stringify(sceneContext)}
+                1. Add NEW NODES to explain concepts. "category": "explain".
+                2. New Node IDs MUST be unique (e.g. append "_${explId}").
+                3. Generate an ANIMATION sequence using existing nodes + new nodes.
                 Output JSON:
                 {
-                    "newNodes": [ { "id": "ex1", "label": "Error Log", "type": "cube", "color": "#f97316", "category": "explain" } ],
-                    "newEdges": [ { "fromId": "n1", "toId": "ex1" } ],
-                    "animation": [
-                         { 
-                           "targetId": "n1", "duration": 2000, "hold": 1000, 
-                           "text": "Standard processing...", "codeSnippet": "process()" 
-                         },
-                         { 
-                           "targetId": "ex1", "duration": 2000, "hold": 2000, 
-                           "text": "If failure occurs, we log here.", "codeSnippet": "try {\n  process()\n} catch(e) {\n  logger.error(e)\n}" 
-                         }
-                    ]
+                    "newNodes": [ { "id": "new_1_${explId}", "label": "Log", "type": "cube", "color": "#f97316", "category": "explain" } ],
+                    "newEdges": [ { "fromId": "existing_id", "toId": "new_1_${explId}" } ],
+                    "animation": [ { "targetId": "new_1_${explId}", "text": "Explanation...", "codeSnippet": "Details..." } ]
                 }
             `;
-
             const resultStr = await callGemini(userInput, systemPrompt);
-            processAiResponse(resultStr, false);
+            processAiResponse(resultStr, false, activeDiagramId, userInput);
         }
 
-        function processAiResponse(resultStr, isFullGen) {
-            if (!resultStr) {
-                statusBar.innerText = "AI Failed.";
-                return;
-            }
-            
+        function processAiResponse(resultStr, isFullGen, id, query) {
+            if (!resultStr) { statusBar.innerText = "AI Failed."; return; }
             try {
                 const cleanJson = resultStr.replace(/```json/g, '').replace(/```/g, '').trim();
                 const data = JSON.parse(cleanJson);
 
                 if (isFullGen) {
-                    // Full Generation
-                    buildFlowFromAI(data);
+                    buildNewFlow(data, id);
                 } else {
-                    // Explanation (Append)
-                    appendExplanation(data);
+                    appendExplanation(data, id, query);
                 }
                 
-                statusBar.innerText = "Ready. Press Play >";
+                statusBar.innerText = "Done! Press Play >";
                 setTimeout(() => statusBar.style.opacity = '0', 3000);
             } catch (e) {
                 console.error(e);
@@ -936,23 +908,26 @@
             }
         }
 
-        function buildFlowFromAI(data) {
-            while(objects.length > 0) { selectedObject = objects[0]; deleteSelected(true); }
-            arrows.forEach(a => scene.remove(a.group));
-            arrows.length = 0;
-
+        function buildNewFlow(data, flowId) {
+            const startX = nextDiagramOffsetX;
+            
+            const diag = {
+                id: flowId,
+                name: data.title || `Diagram ${diagrams.length + 1}`,
+                offsetX: startX,
+                mainSequence: [],
+                explanations: []
+            };
+            
             const createdMeshes = [];
-            const spacingX = 7;
-            const spacingZ = 6;
-            const columns = 3; 
+            const spacingX = 7; const spacingZ = 6; const columns = 3; 
 
             data.nodes.forEach((node, index) => {
                 const col = index % columns;
                 const row = Math.floor(index / columns);
-                const x = (col * spacingX) - ((columns * spacingX) / 2) + (row % 2 === 0 ? 0 : 3);
+                const x = startX + (col * spacingX);
                 const z = (row * spacingZ) - 5;
-                
-                const mesh = createMeshFromData(node, {x, y: 2, z});
+                const mesh = createMeshFromData(node, {x, y: 2, z}, 'standard', flowId);
                 createdMeshes.push(mesh);
             });
 
@@ -963,35 +938,49 @@
             });
 
             if (data.animation) {
-                animState.sequence = data.animation.map(step => ({
+                diag.mainSequence = data.animation.map(step => ({
                     targetId: createdMeshes[step.targetIndex] ? createdMeshes[step.targetIndex].userData.id : null,
-                    duration: step.duration || 2000,
-                    hold: step.hold || 1000,
-                    text: step.text || "",
-                    codeSnippet: step.codeSnippet || ""
+                    duration: step.duration || 2000, hold: step.hold || 1000,
+                    text: step.text || "", codeSnippet: step.codeSnippet || ""
                 })).filter(s => s.targetId);
             }
+
+            diagrams.push(diag);
+            
+            const opt = document.createElement('option');
+            opt.value = flowId; opt.text = diag.name;
+            diagramSelect.appendChild(opt);
+            diagramSelect.value = flowId;
+            
+            activeDiagramId = flowId;
+            activeExplanationId = 'main';
+            diagramSelect.dispatchEvent(new Event('change'));
+            nextDiagramOffsetX += 50; 
         }
 
-        function appendExplanation(data) {
-            // 1. Add New Nodes
-            // Find a spot to put them. Let's put them to the right of existing bounds or interleaved.
-            // Simple strategy: Place them at Z=10 (foreground) spread out.
-            const startX = -5;
-            const spacing = 6;
+        function appendExplanation(data, diagramId, query) {
+            const diag = diagrams.find(d => d.id === diagramId);
+            if(!diag) return;
 
+            const baseX = diag.offsetX;
+            const explId = `expl_${Date.now()}`;
+            
+            const explanation = {
+                id: explId,
+                query: query,
+                sequence: data.animation || [],
+                nodeIds: [] 
+            };
+
+            // Add nodes specific to this explanation
             if (data.newNodes) {
-                // Ensure explain nodes toggle is ON so user sees them
-                document.getElementById('toggle-explain').checked = true;
-                explainNodesVisible = true;
-
                 data.newNodes.forEach((node, i) => {
-                    const pos = { x: startX + (i * spacing), y: 2, z: 8 }; 
-                    createMeshFromData(node, pos);
+                    const pos = { x: baseX + (i * 6), y: 8, z: 8 }; 
+                    const mesh = createMeshFromData(node, pos, 'explain', diagramId, explId);
+                    explanation.nodeIds.push(mesh.userData.id);
                 });
             }
 
-            // 2. Add New Edges (requires ID lookup)
             if (data.newEdges) {
                 data.newEdges.forEach(edge => {
                     const source = objects.find(o => o.userData.id === edge.fromId);
@@ -1000,16 +989,17 @@
                 });
             }
 
-            // 3. Set Animation Sequence
-            if (data.animation) {
-                animState.sequence = data.animation;
-                // Auto-play to show the explanation
-                stopAnimation(); // Reset
-                startAnimation();
-            }
+            diag.explanations.push(explanation);
+            
+            // Force UI refresh and select this explanation
+            updateExplanationUI();
+            explanationSelect.value = explId;
+            activeExplanationId = explId;
+            updateCameraAndSequence();
+            updateVisibility();
         }
 
-        function createMeshFromData(nodeData, position) {
+        function createMeshFromData(nodeData, position, category, diagramId, explanationId = null) {
             let geo;
             switch(nodeData.type) {
                 case 'sphere': geo = new THREE.SphereGeometry(1.2, 32, 32); break;
@@ -1018,15 +1008,14 @@
                 case 'capsule': geo = new THREE.CapsuleGeometry(0.8, 1, 4, 16); break;
                 default: geo = new THREE.BoxGeometry(2, 2, 2); break;
             }
-            
-            const mesh = addMesh(geo, nodeData.type, position, nodeData.color || '#3b82f6', nodeData.category || 'standard');
+            const mesh = addMesh(geo, nodeData.type, position, nodeData.color || '#3b82f6', category, diagramId, explanationId);
             if (nodeData.id) mesh.userData.id = nodeData.id;
             addLabel(nodeData.label, mesh);
             return mesh;
         }
 
-        function deleteSelected(force = false) {
-            if (!selectedObject && !force) return;
+        function deleteSelected() {
+            if (!selectedObject) return;
             const obj = selectedObject;
             scene.remove(obj);
             const index = objects.indexOf(obj);
